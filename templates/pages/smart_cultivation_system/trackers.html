@@ -1,0 +1,79 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container pt-4 py-5 mb-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h1>Current Tracker</h1>
+                    <ul>
+                        <li>
+                            <a href="/smart_cultivation_system/{{tracker.id}}">
+                                Tracker: {{ tracker.id }} - {{ tracker.name }}
+                            </a>
+                        </li>
+                        <li>
+                            <p>{{ tracker.description }}</p>
+                        </li>
+                        <li>
+                            <img src="{{ tracker.asset_img_url }}" alt="" width="200">
+                        </li>
+                        <li>
+                            <img src="{{ tracker.tracker_img_url }}" alt="" width="200">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1>Tracker Details</h1>
+                    <h2>Tracker ID: {{ tracker.id }}</h2>
+                    <div id="map" style="height: 400px;"></div>
+                    <h3>Latitude and Longitude:</h3>
+                    <table id="myTable">
+                        <thead>
+                            <tr>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for location in locations %}
+                            <tr>
+                                <td>{{ location.lat }}</td>
+                                <td>{{ location.lon }}</td>
+                                <td>{{ location.timestamp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                    <p id="broadcastMessage"></p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    var locations = {{ locations | tojson }};
+    $(document).ready(function () {
+        $('#myTable').DataTable({
+            "order": [[2, 'desc']], // Sort by the third column (Timestamp) in descending order
+            "responsive": true
+        });
+    });
+</script>
+<script src="{{ url_for('static',filename='js/map.js') }}"></script>
+{% endblock %}

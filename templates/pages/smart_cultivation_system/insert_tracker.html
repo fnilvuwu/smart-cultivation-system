@@ -1,0 +1,29 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="height: 80vh;">
+    <form method="POST" action="/tracker/insert" class="card p-5 d-flex flex-column gap-3">
+        <h1 class="text-center">Form Tracker</h1>
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.name.label(class="form-control-label mb-2") }}
+            {{ form.name(class="form-control", placeholder="Enter asset name") }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label(class="form-control-label mb-2") }}
+            {{ form.description(class="form-control", placeholder="Enter the description") }}
+        </div>
+        <div class="form-group">
+            {{ form.asset_img_url.label(class="form-control-label mb-2") }}
+            {{ form.asset_img_url(class="form-control", placeholder="Enter the Asset Image URL") }}
+        </div>
+        <div class="form-group">
+            {{ form.tracker_img_url.label(class="form-control-label mb-2") }}
+            {{ form.tracker_img_url(class="form-control", placeholder="Enter the Tracker Image URL") }}
+        </div>
+        {{ form.submit(class="btn btn-dark") }}
+    </form>
+</div>
+
+
+{% endblock %}

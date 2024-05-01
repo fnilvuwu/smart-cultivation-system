@@ -1,0 +1,30 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- First column content -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h1>Trackers</h1>
+                        <div>
+                            <a href="/tracker/insert" class="btn btn-primary">
+                                Insert New Tracker
+                            </a>
+                        </div>
+                    </div>
+                    <ul>
+                        {% for tracker in trackers %}
+                        <a href="/smart_cultivation_system/{{tracker.id}}">Tracker Active: {{ tracker.id }} - {{
+                            tracker.name }}</a>
+                        <br>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
