@@ -31,8 +31,6 @@ init_compress_app(app)
 init_rate_limiter(app)
 init_db(app)
 
-socketio.init_app(app, cors_allowed_origins="*")
-
 # CLI Command
 app.cli.add_command(init_db_command)
 app.cli.add_command(drop_db_command)
