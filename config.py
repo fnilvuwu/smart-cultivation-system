@@ -9,14 +9,14 @@ CONFIG = {
     "CACHE_DEFAULT_TIMEOUT": 300,
     "SESSION_TYPE": "filesystem",
     "SQLALCHEMY_DATABASE_URI": (
-        "mysql+pymysql://"
-        + os.getenv("MYSQL_USERNAME")
+        "postgresql://"
+        + os.getenv("POSTGRES_USER")
         + ":"
-        + os.getenv("MYSQL_PASSWORD")
+        + os.getenv("POSTGRES_PASSWORD")
         + "@"
-        + os.getenv("MYSQL_HOST")
+        + os.getenv("POSTGRES_HOST")
         + "/"
-        + os.getenv("MYSQL_DATABASE")
+        + os.getenv("POSTGRES_DATABASE")
     ),
     "SQLALCHEMY_TRACK_MODIFICATIONS": False,
 }
