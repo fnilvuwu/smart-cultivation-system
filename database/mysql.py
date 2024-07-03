@@ -29,19 +29,19 @@ def drop_db(app):
 
 def format_database_error(exception):
     if isinstance(exception, IntegrityError):
-        return "Integrity constraint violation: {}".format(exception.orig)
+        return f"Integrity constraint violation: {exception.orig}"
     elif isinstance(exception, OperationalError):
-        return "Database operation error: {}".format(exception.orig)
+        return f"Database operation error: {exception.orig}"
     elif isinstance(exception, ProgrammingError):
-        return "Database programming error: {}".format(exception.orig)
+        return f"Database programming error: {exception.orig}"
     elif isinstance(exception, DataError):
-        return "Data error: {}".format(exception.orig)
+        return f"Data error: {exception.orig}"
     elif isinstance(exception, NoResultFound):
-        return "No result found: {}".format(exception.orig)
+        return f"No result found: {exception.orig}"
     elif isinstance(exception, MultipleResultsFound):
-        return "Multiple results found: {}".format(exception.orig)
+        return f"Multiple results found: {exception.orig}"
     else:
-        return "Unknown database error: {}".format(exception)
+        return f"Unknown database error: {exception}"
 
 
 @click.command("init-db")
