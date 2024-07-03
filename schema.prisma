@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tracker {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?
+  asset_img_url  String?
+  tracker_img_url String?
+
+  locations      Location[]
+
+  @@map("tracker") // Optional: Maps this model to an existing table named "tracker" in the database
+}
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  tracker_id  Int
+  lat         Float
+  lon         Float
+  timestamp   DateTime
+
+  tracker     Tracker  @relation(fields: [tracker_id], references: [id])
+
+  @@map("location") // Optional: Maps this model to an existing table named "location" in the database
+
+  // Optional: Specify the default sort order for this model
+  @@orderBy([{
+    path: "timestamp",
+    direction: "desc"
+  }])
+}
+
