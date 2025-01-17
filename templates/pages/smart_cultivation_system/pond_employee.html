@@ -1,0 +1,597 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container pt-4 py-5 mb-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h1>Current Fish Pond</h1>
+                    <ul>
+                        <li>
+                            <a href="/smart_cultivation_system/{{ pond.pond_id }}">
+                                Fish Pond: {{ pond.pond_id }} - {{ pond.pond_name }}
+                            </a>
+                        </li>
+                        <li>
+                            <p>{{ pond.location }}</p>
+                        </li>
+                        <li>
+                            <strong>Owner:</strong> {{ owner.username }}
+                        </li>
+                        <li>
+                            <strong>Employees:</strong>
+                            <ul>
+                                {% for employee in employees %}
+                                <li>
+                                    {{ employee.employee_name }} (ID: {{ employee.employee_id }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="mt-4">
+                        <h5>Download Reports</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="{{ url_for('smart_cultivation_system.download_excel_report', pond_id=pond.pond_id) }}"
+                                    class="btn btn-success w-100">
+                                    <i class="fas fa-file-excel me-2"></i>Download Excel Report
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{{ url_for('smart_cultivation_system.download_pdf_report', pond_id=pond.pond_id) }}"
+                                    class="btn btn-danger w-100">
+                                    <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-0">Water Quality</h2>
+                    <div id="waterQualityCharts" class="mb-4">
+                        <div class="row">
+                            <div class="col-4">
+                                <div id="phChart"></div>
+                            </div>
+                            <div class="col-4">
+                                <div id="turbidityChart"></div>
+                            </div>
+                            <div class="col-4">
+                                <div id="temperatureChart"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="card-title mb-0">Water Quality History</h2>
+                    <div id="waterQualityHistoryChart" class="mb-4">
+                        <!-- Plotly line chart will be inserted here -->
+                    </div>
+
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Water Quality Table</h2>
+                        <!-- Modal trigger button -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#addWaterQualityModal">
+                            <i class="fas fa-plus"></i> Add Water Quality Data
+                        </button>
+                    </div>
+
+                    <table id="waterQualityDataTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Date</th>
+                                <th>pH</th>
+                                <th>Turbidity</th>
+                                <th>Temperature</th>
+                                <th>Nitrate</th>
+                                <th>Ammonia</th>
+                                <th>Dissolved Oxygen</th>
+                                <th>Quality Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for waterQuality in waterQualities %}
+                            <tr>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-water-quality"
+                                        data-id="{{ waterQuality.water_quality_id }}" data-bs-toggle="modal"
+                                        data-bs-target="#editWaterQualityModal">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-water-quality"
+                                        data-id="{{ waterQuality.water_quality_id }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                                <td>{{ waterQuality.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ waterQuality.pH }}</td>
+                                <td>{{ waterQuality.turbidity }}</td>
+                                <td>{{ waterQuality.temperature }}</td>
+                                <td>{{ waterQuality.nitrate }}</td>
+                                <td>{{ waterQuality.ammonia }}</td>
+                                <td>{{ waterQuality.dissolved_oxygen }}</td>
+                                <td>{{ waterQuality.quality_grade }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Fish Data Table</h2>
+                        <!-- Modal trigger button -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#addFishDataModal">
+                            <i class="fas fa-plus"></i> Insert New Fish Data
+                        </button>
+                    </div>
+                    <table id="fishDataTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Date</th>
+                                <th>Fish Weight</th>
+                                <th>Fish Height</th>
+                                <th>Fish Population</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fishData in fishData %}
+                            <tr>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-fish-data"
+                                        data-id="{{ fishData.fish_data_id }}" data-bs-toggle="modal"
+                                        data-bs-target="#editFishDataModal">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-fish-data"
+                                        data-id="{{ fishData.fish_data_id }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                                <td>{{ fishData.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ fishData.fish_weight }}</td>
+                                <td>{{ fishData.fish_height }}</td>
+                                <td>{{ fishData.fish_population }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h2>Metrics</h2>
+                    <table id="metricsTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Fish Weight</th>
+                                <th>Average Fish Weight</th>
+                                <th>Average Fish Height</th>
+                                <th>Total Population</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- TODO metrics masih manual -->
+                            <!-- untuk logika disini tentunya harus setiap ada data masuk, lalu sesuatu terjadi yang otomatis menghasilkan si metrics -->
+                            {% for metric in metrics %}
+                            <tr>
+                                <td>{{ metric.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ metric.total_fish_weight }}</td>
+                                <td>{{ metric.average_fish_weight }}</td>
+                                <td>{{ metric.average_fish_height }}</td>
+                                <td>{{ metric.total_population }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Water Quality Modal -->
+<div class="modal fade" id="addWaterQualityModal" tabindex="-1" aria-labelledby="addWaterQualityModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWaterQualityModalLabel">Add Water Quality Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST"
+                action="{{ url_for('smart_cultivation_system.add_water_quality', pond_id=pond.pond_id) }}">
+                <div class="modal-body">
+                    {{ water_form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ water_form.pH.label(class="form-control-label mb-2") }}
+                        {{ water_form.pH(class="form-control", placeholder="Enter pH value") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.turbidity.label(class="form-control-label mb-2") }}
+                        {{ water_form.turbidity(class="form-control", placeholder="Enter turbidity value") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.temperature.label(class="form-control-label mb-2") }}
+                        {{ water_form.temperature(class="form-control", placeholder="Enter temperature value") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.nitrate.label(class="form-control-label mb-2") }}
+                        {{ water_form.nitrate(class="form-control", placeholder="Enter nitrate value") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.ammonia.label(class="form-control-label mb-2") }}
+                        {{ water_form.ammonia(class="form-control", placeholder="Enter Ammonia Level") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.dissolved_oxygen.label(class="form-control-label mb-2") }}
+                        {{ water_form.dissolved_oxygen(class="form-control", placeholder="Enter Dissolved Oxygen Level") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Water Quality Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Water Quality Modal -->
+<div class="modal fade" id="editWaterQualityModal" tabindex="-1" aria-labelledby="editWaterQualityModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editWaterQualityModalLabel">Edit Water Quality Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editWaterQualityForm">
+                <div class="modal-body">
+                    {{ water_form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ water_form.pH.label(class="form-control-label mb-2") }}
+                        {{ water_form.pH(class="form-control", placeholder="Enter pH Level", id="ph") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.turbidity.label(class="form-control-label mb-2") }}
+                        {{ water_form.turbidity(class="form-control", placeholder="Enter Turbidity Level") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.temperature.label(class="form-control-label mb-2") }}
+                        {{ water_form.temperature(class="form-control", placeholder="Enter Temperature (°C)") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.nitrate.label(class="form-control-label mb-2") }}
+                        {{ water_form.nitrate(class="form-control", placeholder="Enter Nitrate Level") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.ammonia.label(class="form-control-label mb-2") }}
+                        {{ water_form.ammonia(class="form-control", placeholder="Enter Ammonia Level", id="ammonia") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ water_form.dissolved_oxygen.label(class="form-control-label mb-2") }}
+                        {{ water_form.dissolved_oxygen(class="form-control", placeholder="Enter Dissolved Oxygen Level", id="dissolved_oxygen") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Water Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Fish Data Modal -->
+<div class="modal fade" id="addFishDataModal" tabindex="-1" aria-labelledby="addFishDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addFishDataModalLabel">Add New Fish Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('smart_cultivation_system.add_fish_data', pond_id=pond.pond_id) }}">
+                <div class="modal-body">
+                    {{ fish_form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_weight.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_weight(class="form-control", placeholder="Enter Fish Weight (grams)") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_height.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_height(class="form-control", placeholder="Enter Fish Height (cm)") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_population.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_population(class="form-control", placeholder="Enter Fish Population") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit Fish Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Fish Data Modal -->
+<div class="modal fade" id="editFishDataModal" tabindex="-1" aria-labelledby="editFishDataModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editFishDataModalLabel">Edit Fish Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editFishDataForm">
+                <div class="modal-body">
+                    {{ fish_form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_weight.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_weight(class="form-control", placeholder="Enter Fish Weight (grams)") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_height.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_height(class="form-control", placeholder="Enter Fish Height (cm)") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ fish_form.fish_population.label(class="form-control-label mb-2") }}
+                        {{ fish_form.fish_population(class="form-control", placeholder="Enter Fish Population") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Fish Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    // Modify the edit water quality handler in the template
+    $('.edit-water-quality').click(function () {
+        var id = $(this).data('id');
+        console.log("Editing water quality ID:", id); // Debug log
+
+        $.get(`/smart_cultivation_system/water_quality/${id}`, function (data) {
+            $('#editWaterQualityForm').attr('action', `/smart_cultivation_system/water_quality/${id}/update`);
+            $('#editWaterQualityForm #ph').val(data.pH);
+            $('#editWaterQualityForm #ammonia').val(data.ammonia);
+            $('#editWaterQualityForm #dissolved_oxygen').val(data.dissolved_oxygen);
+            $('#editWaterQualityForm #turbidity').val(data.turbidity);
+            $('#editWaterQualityForm #temperature').val(data.temperature);
+            $('#editWaterQualityForm #nitrate').val(data.nitrate);
+        });
+    });
+
+    // Add form submission handler
+    $('#editWaterQualityForm').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            success: function (response) {
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                alert('Error updating water quality: ' + error);
+            }
+        });
+    });
+
+    // Modify the delete handlers
+    $('.delete-water-quality').click(function () {
+        var id = $(this).data('id');
+        console.log("Deleting water quality ID:", id); // Debug log
+
+        if (confirm('Are you sure you want to delete this water quality record?')) {
+            $.ajax({
+                url: `/smart_cultivation_system/water_quality/${id}/delete`,
+                type: 'POST',
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Delete error:", error); // Debug log
+                    alert('Error deleting record: ' + error);
+                }
+            });
+        }
+    });
+
+    $('.delete-fish-data').click(function () {
+        var id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this fish data record?')) {
+            $.ajax({
+                url: `/smart_cultivation_system/fish_data/${id}/delete`,
+                method: 'POST',
+                success: function () {
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('Error deleting fish data: ' + error);
+                }
+            });
+        }
+    });
+
+    $(document).ready(function () {
+        // Plotly graph data
+        var latestWaterQualities = {{ latestWaterQualities| safe
+    }};
+    var historicalWaterQualities = {{ historicalWaterQualities| safe }};
+
+    // Create circular charts for latest pH, Turbidity, and Temperature
+    var phChart = {
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: latestWaterQualities.pH,
+        title: { text: "Latest pH" },
+        gauge: {
+            axis: { range: [0, 14] }
+        }
+    };
+
+    var turbidityChart = {
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: latestWaterQualities.turbidity,
+        title: { text: "Latest Turbidity" },
+        gauge: {
+            axis: { range: [0, 100] }
+        }
+    };
+
+    var temperatureChart = {
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: latestWaterQualities.temperature,
+        title: { text: "Latest Temperature" },
+        gauge: {
+            axis: { range: [0, 40] }
+        }
+    };
+
+    Plotly.newPlot('phChart', [phChart]);
+    Plotly.newPlot('turbidityChart', [turbidityChart]);
+    Plotly.newPlot('temperatureChart', [temperatureChart]);
+
+    // Create historical line chart
+    var historicalChart = document.getElementById('waterQualityHistoryChart');
+    var traces = [
+        {
+            x: historicalWaterQualities.dates,
+            y: historicalWaterQualities.ph,
+            name: 'pH',
+            type: 'scatter'
+        },
+        {
+            x: historicalWaterQualities.dates,
+            y: historicalWaterQualities.turbidity,
+            name: 'Turbidity',
+            type: 'scatter'
+        },
+        {
+            x: historicalWaterQualities.dates,
+            y: historicalWaterQualities.temperature,
+            name: 'Temperature',
+            type: 'scatter'
+        },
+        {
+            x: historicalWaterQualities.dates,
+            y: historicalWaterQualities.nitrate,
+            name: 'Nitrate',
+            type: 'scatter'
+        }
+    ];
+
+    var layout = {
+        title: 'Water Quality History',
+        xaxis: {
+            title: 'Date',
+            type: 'date',
+            tickformat: '%Y-%m-%d %H:%M:%S'
+        },
+        yaxis: {
+            title: 'Value'
+        },
+    };
+
+    Plotly.newPlot('waterQualityHistoryChart', traces, layout);
+
+    // Optional: Clear form when modal is closed
+    $('#addWaterQualityModal, #editWaterQualityModal').on('hidden.bs.modal', function () {
+        $(this).find('form')[0].reset();
+    });
+
+    // Add form reset functionality for fish data modal
+    $('#addFishDataModal, #editFishDataModal').on('hidden.bs.modal', function () {
+        $(this).find('form')[0].reset();
+    });
+
+    // Handle edit water quality button click
+    $('.edit-water-quality').click(function () {
+        var id = $(this).data('id');
+        // Fetch water quality data and populate form
+        $.get(`/smart_cultivation_system/water_quality/${id}`, function (data) {
+            $('#editWaterQualityForm').attr('action', `/smart_cultivation_system/water_quality/${id}/update`);
+            $('#editWaterQualityForm #ph').val(data.pH);
+            $('#editWaterQualityForm #ammonia').val(data.ammonia);
+            $('#editWaterQualityForm #dissolved_oxygen').val(data.dissolved_oxygen);
+            $('#editWaterQualityForm #turbidity').val(data.turbidity);
+            $('#editWaterQualityForm #temperature').val(data.temperature);
+            $('#editWaterQualityForm #nitrate').val(data.nitrate);
+        });
+    });
+
+    // Handle delete water quality button click
+    $('.delete-water-quality').click(function () {
+        var id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this water quality record?')) {
+            $.post(`/smart_cultivation_system/water_quality/${id}/delete`, function () {
+                location.reload();
+            });
+        }
+    });
+
+    // Handle edit fish data button click
+    $('.edit-fish-data').click(function () {
+        var id = $(this).data('id');
+        // Fetch fish data and populate form
+        $.get(`/smart_cultivation_system/fish_data/${id}`, function (data) {
+            $('#editFishDataForm').attr('action', `/smart_cultivation_system/fish_data/${id}/update`);
+            $('#editFishDataForm #fish_weight').val(data.fish_weight);
+            $('#editFishDataForm #fish_height').val(data.fish_height);
+            $('#editFishDataForm #fish_population').val(data.fish_population);
+        });
+    });
+
+    // Handle delete fish data button click
+    $('.delete-fish-data').click(function () {
+        var id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this fish data record?')) {
+            $.post(`/smart_cultivation_system/fish_data/${id}/delete`, function () {
+                location.reload();
+            });
+        }
+    });
+    });
+
+    $(document).ready(function () {
+        // Initialize DataTables
+        $('#waterQualityDataTable').DataTable({
+            "order": [[1, 'desc']],  // Sort by date column (index 1) in descending order
+            "responsive": true
+        });
+
+        $('#fishDataTable').DataTable({
+            "order": [[1, 'desc']],  // Sort by date column (index 1) in descending order
+            "responsive": true
+        });
+
+        $('#metricsTable').DataTable({
+            "order": [[0, 'desc']],
+            "responsive": true
+        });
+    });
+</script>
+{% endblock %}

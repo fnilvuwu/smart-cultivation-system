@@ -1,0 +1,145 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100 pt-4 py-5 mb-5">
+    <form method="POST" class="card p-5 d-flex flex-column gap-3">
+        <h1 class="text-center">Catfish Aquaculture Input Form</h1>
+        <div class="form-group">
+            <label for="temperature">Temperature (°C):</label>
+            <input type="number" step="0.1" class="form-control" id="temperature" name="temperature" placeholder="20-35"
+                required>
+            <small class="form-text text-muted">Enter the water temperature in degrees Celsius (20-35°C).</small>
+        </div>
+        <div class="form-group">
+            <label for="turbidity">Turbidity (NTU):</label>
+            <input type="number" step="0.1" class="form-control" id="turbidity" name="turbidity" placeholder="0-100"
+                required>
+            <small class="form-text text-muted">Enter the turbidity of the water in Nephelometric Turbidity Units (0-100
+                NTU).</small>
+        </div>
+        <div class="form-group">
+            <label for="dissolved_oxygen">Dissolved Oxygen (mg/L):</label>
+            <input type="number" step="0.1" class="form-control" id="dissolved_oxygen" name="dissolved_oxygen"
+                placeholder="0-20" required>
+            <small class="form-text text-muted">Enter the amount of dissolved oxygen in the water in milligrams per
+                liter (0-20 mg/L).</small>
+        </div>
+        <div class="form-group">
+            <label for="ph">pH:</label>
+            <input type="number" step="0.1" class="form-control" id="ph" name="ph" placeholder="1-14" required>
+            <small class="form-text text-muted">Enter the pH level of the water (1-14).</small>
+        </div>
+        <div class="form-group">
+            <label for="ammonia">Ammonia (mg/L):</label>
+            <input type="number" step="0.01" class="form-control" id="ammonia" name="ammonia" placeholder="0-1"
+                required>
+            <small class="form-text text-muted">Enter the concentration of ammonia in the water in milligrams per liter
+                (0-1 mg/L).</small>
+        </div>
+        <div class="form-group">
+            <label for="nitrate">Nitrate (mg/L):</label>
+            <input type="number" step="0.1" class="form-control" id="nitrate" name="nitrate" placeholder="1-100"
+                required>
+            <small class="form-text text-muted">Enter the concentration of nitrate in the water in milligrams per liter
+                (1-100 mg/L).</small>
+        </div>
+
+        {% if predictions %}
+        <div>
+            <h2 class="text-center">Predictions Result</h2>
+            <p><strong>Fish Length (cm): </strong>{{ predictions.length }}</p>
+            <p><strong>Fish Weight (g): </strong>{{ predictions.weight }}</p>
+            <p><strong>Fish Health Condition Factor: </strong>{{ fish_condition_factor }}</p>
+            <p><strong>Water Quality Score: </strong>{{ predictions.quality }}</p>
+            <p><strong>Water Quality Category: </strong>{{ predictions.quality_category }}</p>
+        </div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-outline-dark w-100" data-toggle="modal"
+                    data-target="#recommendationsModal">
+                    Show Recommendations
+                </button>
+            </div>
+            <div class="col-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-outline-dark w-100" data-toggle="modal"
+                    data-target="#instructionsModal">
+                    Show Instructions
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Predict Water Quality</button>
+
+    </form>
+</div>
+
+<!-- Recommendations Modal -->
+<div class="modal fade" id="recommendationsModal" tabindex="-1" role="dialog"
+    aria-labelledby="recommendationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recommendationsModalLabel">Recommendations for Catfish</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Temperature (°C):</strong> 25 - 30°C.</p>
+                <p><strong>Turbidity (NTU):</strong> 20 - 50 NTU.</p>
+                <p><strong>Dissolved Oxygen (mg/L):</strong> 5 - 7 mg/L.</p>
+                <p><strong>pH:</strong> 6.5 - 8.5.</p>
+                <p><strong>Ammonia (mg/L):</strong>
+                    < 0.05 mg/L.</p>
+                        <p><strong>Nitrate (mg/L):</strong>
+                            < 50 mg/L.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions Modal -->
+<div class="modal fade" id="instructionsModal" tabindex="-1" role="dialog" aria-labelledby="instructionsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="instructionsModalLabel">Instructions</h5>
+            </div>
+            <div class="modal-body">
+                <p><strong>Temperature (°C):</strong> Enter the water temperature in degrees Celsius (20-35°C).</p>
+                <p><strong>Turbidity (NTU):</strong> Enter the turbidity of the water in Nephelometric Turbidity Units
+                    (0-100 NTU).</p>
+                <p><strong>Dissolved Oxygen (mg/L):</strong> Enter the amount of dissolved oxygen in the water in
+                    milligrams per liter (0-20 mg/L).</p>
+                <p><strong>pH:</strong> Enter the pH level of the water (1-14).</p>
+                <p><strong>Ammonia (mg/L):</strong> Enter the concentration of ammonia in the water in milligrams per
+                    liter (0-1 mg/L).</p>
+                <p><strong>Nitrate (mg/L):</strong> Enter the concentration of nitrate in the water in milligrams per
+                    liter (1-100 mg/L).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

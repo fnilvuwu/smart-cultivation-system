@@ -4,11 +4,10 @@ from auth import auth
 from rate_limiter import limiter
 from socket_io import socketio
 
-from database.model.location import Location
+from database.model.pond import WaterQuality, FishData, FishPondMetrics
 from database.mysql import db, format_database_error
 
 bp = Blueprint("receive_data", __name__)
-
 
 @bp.route("/receive_data", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
@@ -16,15 +15,30 @@ bp = Blueprint("receive_data", __name__)
 def receive_data_from_esp32():
     if request.method == "POST":
         input_data = request.get_json()
-        tracker_id = input_data["tracker_id"]
-        lat = input_data["lat"]
-        lon = input_data["lon"]
+        pond_id = input_data["pond_id"]
+        pH = input_data["pH"]
+        turbidity = input_data["turbidity"]
+        temperature = input_data["temperature"]
+        nitrate = input_data["nitrate"]
+        fish_weight = input_data["fish_weight"]
+        fish_height = input_data["fish_height"]
+        fish_population = input_data["fish_population"]
+        total_fish_weight = input_data["total_fish_weight"]
+        average_fish_weight = input_data["average_fish_weight"]
+        average_fish_height = input_data["average_fish_height"]
+        total_population = input_data["total_population"]
         timestamp = input_data["timestamp"]
 
         try:
-            location = Location(tracker_id, lat, lon, timestamp)
-            db.session.add(location)
+            water_quality = WaterQuality(pond_id, pH, turbidity, temperature, nitrate, timestamp)
+            fish_data = FishData(pond_id, fish_weight, fish_height, fish_population, timestamp)
+            metrics = FishPondMetrics(pond_id, total_fish_weight, average_fish_weight, average_fish_height, total_population, timestamp)
+            
+            db.session.add(water_quality)
+            db.session.add(fish_data)
+            db.session.add(metrics)
             db.session.commit()
+
             return (
                 jsonify(
                     {
@@ -33,9 +47,18 @@ def receive_data_from_esp32():
                             "message": "Data received and saved successfully",
                         },
                         "data": {
-                            "tracker_id": tracker_id,
-                            "lat": lat,
-                            "lon": lon,
+                            "pond_id": pond_id,
+                            "pH": pH,
+                            "turbidity": turbidity,
+                            "temperature": temperature,
+                            "nitrate": nitrate,
+                            "fish_weight": fish_weight,
+                            "fish_height": fish_height,
+                            "fish_population": fish_population,
+                            "total_fish_weight": total_fish_weight,
+                            "average_fish_weight": average_fish_weight,
+                            "average_fish_height": average_fish_height,
+                            "total_population": total_population,
                             "timestamp": timestamp,
                         },
                     }
@@ -62,7 +85,6 @@ def receive_data_from_esp32():
             405,
         )
 
-
 @bp.route("/broadcast", methods=["POST"])
 def broadcast():
     if request.method == "POST":
@@ -72,7 +94,7 @@ def broadcast():
         return jsonify({
             "status": {
                 "code": 200,
-                "message": "Success broadcasting new messae",
+                "message": "Success broadcasting new message",
             },
             "data": None,
         }), 200

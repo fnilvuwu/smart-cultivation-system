@@ -1,0 +1,42 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <form method="POST" action="/register" class="card p-5 d-flex flex-column gap-3">
+        <h1 class="text-center">Owner Register</h1>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.email.label(class="form-control-label mb-2") }}
+            {{ form.email(class="form-control", placeholder="Enter your email") }}
+        </div>
+        <div class="form-group">
+            {{ form.username.label(class="form-control-label mb-2") }}
+            {{ form.username(class="form-control", placeholder="Enter your username") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-control-label mb-2") }}
+            {{ form.password(class="form-control", placeholder="Enter your password") }}
+        </div>
+        <p>
+            {% for error in form.email.errors %}
+            <span style="color: red;">[{{ error }}]</span><br>
+            {% endfor %}
+        </p>
+        <p>
+            {% for error in form.password.errors %}
+            <span style="color: red;">[{{ error }}]</span><br>
+            {% endfor %}
+        </p>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {{ form.submit(class="btn btn-dark") }}
+    </form>
+</div>
+{% endblock %}

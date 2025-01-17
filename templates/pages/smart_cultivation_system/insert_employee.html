@@ -1,0 +1,57 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <form method="POST" action="/employee/insert" class="card p-5 d-flex flex-column gap-3">
+        <h1 class="text-center">Insert Employee</h1>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.employee_name.label(class="form-control-label mb-2") }}
+            {{ form.employee_name(class="form-control", placeholder="Enter employee name") }}
+        </div>
+        <div class="form-group">
+            {{ form.employee_email.label(class="form-control-label mb-2") }}
+            {{ form.employee_email(class="form-control", placeholder="Enter employee email") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-control-label mb-2") }}
+            {{ form.password(class="form-control", placeholder="Enter employee password", type="password") }}
+        </div>
+        <div class="form-group">
+            {{ form.ponds.label(class="form-control-label mb-2") }}
+            {% set selected_ponds = form.ponds.data or [] %}
+            {% for value, label in form.ponds.choices %}
+                <div class="form-check">
+                    <input type="checkbox" name="{{ form.ponds.name }}" value="{{ value }}" id="pond_{{ value }}" class="form-check-input" {% if value in selected_ponds %} checked {% endif %}>
+                    <label class="form-check-label" for="pond_{{ value }}">{{ label }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {% for error in form.employee_name.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+            {% for error in form.employee_email.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+            {% for error in form.password.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+            {% for error in form.ponds.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {{ form.submit(class="btn btn-dark") }}
+    </form>
+</div>
+{% endblock %}

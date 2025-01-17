@@ -1,0 +1,272 @@
+{% extends "components/master_layout.html" %}
+
+{% block content %}
+<div class="container pt-4 py-5 mb-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h1>Current Fish Pond</h1>
+                    <ul>
+                        <li>
+                            <a href="/smart_cultivation_system/{{ pond.pond_id }}">
+                                Fish Pond: {{ pond.pond_id }} - {{ pond.pond_name }}
+                            </a>
+                        </li>
+                        <li>
+                            <p>{{ pond.location }}</p>
+                        </li>
+                        <li>
+                            <strong>Owner:</strong> {{ owner.username }}
+                        </li>
+                        <li>
+                            <strong>Employees:</strong>
+                            <ul>
+                                {% for employee in employees %}
+                                <li>
+                                    {{ employee.employee_name }} (ID: {{ employee.employee_id }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="mt-4">
+                        <h5>Download Reports</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="{{ url_for('smart_cultivation_system.download_excel_report', pond_id=pond.pond_id) }}" 
+                                   class="btn btn-success w-100">
+                                    <i class="fas fa-file-excel me-2"></i>Download Excel Report
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{{ url_for('smart_cultivation_system.download_pdf_report', pond_id=pond.pond_id) }}" 
+                                   class="btn btn-danger w-100">
+                                    <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-0">Water Quality</h2>
+                    <div id="waterQualityCharts" class="mb-4">
+                        <div class="row">
+                            <div class="col-4">
+                                <div id="phChart"></div>
+                            </div>
+                            <div class="col-4">
+                                <div id="turbidityChart"></div>
+                            </div>
+                            <div class="col-4">
+                                <div id="temperatureChart"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="card-title mb-0">Water Quality History</h2>
+                    <div id="waterQualityHistoryChart" class="mb-4">
+                        <!-- Plotly line chart will be inserted here -->
+                    </div>
+
+                    <h2 class="card-title mb-0">Water Quality Table</h2>
+                    <table id="waterQualityDataTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>pH</th>
+                                <th>Turbidity</th>
+                                <th>Temperature</th>
+                                <th>Nitrate</th>
+                                <th>Ammonia</th>
+                                <th>Dissolved Oxygen</th>
+                                <th>Quality Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for waterQuality in waterQualities %}
+                            <tr>
+                                <td>{{ waterQuality.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ waterQuality.pH }}</td>
+                                <td>{{ waterQuality.turbidity }}</td>
+                                <td>{{ waterQuality.temperature }}</td>
+                                <td>{{ waterQuality.nitrate }}</td>
+                                <td>{{ waterQuality.ammonia }}</td>
+                                <td>{{ waterQuality.dissolved_oxygen }}</td>
+                                <td>{{ waterQuality.quality_grade }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h2 class="card-title mb-0">Fish Data Table</h2>
+                    <table id="fishDataTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Fish Weight</th>
+                                <th>Fish Height</th>
+                                <th>Fish Population</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fishData in fishData %}
+                            <tr>
+                                <td>{{ fishData.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ fishData.fish_weight }}</td>
+                                <td>{{ fishData.fish_height }}</td>
+                                <td>{{ fishData.fish_population }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h2>Metrics</h2>
+                    <table id="metricsTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Fish Weight</th>
+                                <th>Average Fish Weight</th>
+                                <th>Average Fish Height</th>
+                                <th>Total Population</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metric in metrics %}
+                            <tr>
+                                <td>{{ metric.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ metric.total_fish_weight }}</td>
+                                <td>{{ metric.average_fish_weight }}</td>
+                                <td>{{ metric.average_fish_height }}</td>
+                                <td>{{ metric.total_population }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Plotly graph data
+        var latestWaterQualities = {{ latestWaterQualities| safe }};
+        var historicalWaterQualities = {{ historicalWaterQualities| safe }};
+
+        // Create circular charts for latest pH, Turbidity, and Temperature
+        var phChart = {
+            type: 'indicator',
+            mode: 'gauge+number',
+            value: latestWaterQualities.pH,
+            title: { text: "Latest pH" },
+            gauge: {
+                axis: { range: [0, 14] }
+            }
+        };
+
+        var turbidityChart = {
+            type: 'indicator',
+            mode: 'gauge+number',
+            value: latestWaterQualities.turbidity,
+            title: { text: "Latest Turbidity" },
+            gauge: {
+                axis: { range: [0, 100] }
+            }
+        };
+
+        var temperatureChart = {
+            type: 'indicator',
+            mode: 'gauge+number',
+            value: latestWaterQualities.temperature,
+            title: { text: "Latest Temperature" },
+            gauge: {
+                axis: { range: [0, 40] }
+            }
+        };
+
+        // Plot individual gauge charts
+        Plotly.newPlot('phChart', [phChart]);
+        Plotly.newPlot('turbidityChart', [turbidityChart]);
+        Plotly.newPlot('temperatureChart', [temperatureChart]);
+
+        // Create historical line chart
+        var historicalChart = document.getElementById('waterQualityHistoryChart');
+        var traces = [
+            {
+                x: historicalWaterQualities.dates,
+                y: historicalWaterQualities.ph,
+                name: 'pH',
+                type: 'scatter'
+            },
+            {
+                x: historicalWaterQualities.dates,
+                y: historicalWaterQualities.turbidity,
+                name: 'Turbidity',
+                type: 'scatter'
+            },
+            {
+                x: historicalWaterQualities.dates,
+                y: historicalWaterQualities.temperature,
+                name: 'Temperature',
+                type: 'scatter'
+            },
+            {
+                x: historicalWaterQualities.dates,
+                y: historicalWaterQualities.nitrate,
+                name: 'Nitrate',
+                type: 'scatter'
+            }
+        ];
+
+        var layout = {
+            title: 'Water Quality History',
+            xaxis: {
+                title: 'Date',
+                type: 'date',
+                tickformat: '%Y-%m-%d %H:%M:%S'
+            },
+            yaxis: {
+                title: 'Value'
+            }
+        };
+
+        Plotly.newPlot('waterQualityHistoryChart', traces, layout);
+
+        // Initialize DataTables
+        $('#waterQualityDataTable').DataTable({
+            "order": [[0, 'desc']],
+            "responsive": true
+        });
+
+        $('#fishDataTable').DataTable({
+            "order": [[0, 'desc']],
+            "responsive": true
+        });
+
+        $('#metricsTable').DataTable({
+            "order": [[0, 'desc']],
+            "responsive": true
+        });
+
+        // Make charts responsive
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize('phChart');
+            Plotly.Plots.resize('turbidityChart');
+            Plotly.Plots.resize('temperatureChart');
+            Plotly.Plots.resize('waterQualityHistoryChart');
+        });
+    });
+</script>
+{% endblock %}

@@ -2,8 +2,16 @@
 
 {% block content %}
 <div class="container d-flex justify-content-center align-items-center" style="height: 80vh;">
-  <a href="/smart_cultivation_system" class="card text-center p-4">
-    <h1>Smart Cultivation System</h1>
-  </a>
+  {% if current_user.is_authenticated %}
+    <!-- Link to the dashboard if the user is authenticated -->
+    <a href="{{ url_for('smart_cultivation_system.dashboard') }}" class="card text-center p-4">
+      <h1>Smart Cultivation System</h1>
+    </a>
+  {% else %}
+    <!-- Link to login page if the user is not authenticated -->
+    <a href="{{ url_for('login.user_login') }}" class="card text-center p-4">
+      <h1>Smart Cultivation System</h1>
+    </a>
+  {% endif %}
 </div>
 {% endblock %}
